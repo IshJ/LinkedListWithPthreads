@@ -16,6 +16,7 @@ pthread_mutex_t list_mutex;
 pthread_mutex_t member_mutex;
 pthread_mutex_t insert_mutex;
 pthread_mutex_t delete_mutex;
+pthread_mutex_t total_mutex;
 
 struct list_node_s* head = NULL;
 
@@ -61,6 +62,7 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_init(&member_mutex, NULL);
 	pthread_mutex_init(&insert_mutex, NULL);
 	pthread_mutex_init(&delete_mutex, NULL);
+	pthread_mutex_init(&total_mutex, NULL);
 
 	for (thread = 0; thread < thread_count; thread++) {
 		pthread_create(&thread_handles[thread], NULL, Thread_Operation, NULL);
@@ -77,6 +79,7 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_destroy(&member_mutex);
 	pthread_mutex_destroy(&insert_mutex);
 	pthread_mutex_destroy(&delete_mutex);
+	pthread_mutex_destroy(&total_mutex);
 
 	elapsedTime = (double) (endTime.tv_usec - startTime.tv_usec) / 1000000
 			+ (double) (endTime.tv_sec - startTime.tv_sec);
@@ -119,7 +122,7 @@ int Insert(int value, struct list_node_s **head_pp) {
 			*head_pp = temp_p;
 		else
 			pred_p->next = temp_p;
-		return 1;
+		return 1;totalCount++;
 	} else {
 		return 0;
 	}
@@ -170,7 +173,9 @@ void *Thread_Operation() {
 			if (finished_member == 0) {
 				if (memberCount < m_member) {
 					memberCount++;
+					pthread_mutex_lock(&total_mutex);
 					totalCount++;
+					pthread_mutex_unlock(&total_mutex);
 					pthread_mutex_unlock(&member_mutex);
 					pthread_mutex_lock(&list_mutex);
 					Member(random_value, head);
@@ -187,7 +192,9 @@ void *Thread_Operation() {
 			if (finished_insert == 0) {
 				if (insertCount < m_insert) {
 					insertCount++;
+					pthread_mutex_lock(&total_mutex);
 					totalCount++;
+					pthread_mutex_unlock(&total_mutex);
 					pthread_mutex_unlock(&insert_mutex);
 					pthread_mutex_lock(&list_mutex);
 					Insert(random_value, &head);
@@ -204,7 +211,9 @@ void *Thread_Operation() {
 			if (finished_delete == 0) {
 				if (deleteCount < m_delete) {
 					deleteCount++;
+					pthread_mutex_lock(&total_mutex);
 					totalCount++;
+					pthread_mutex_unlock(&total_mutex);
 					pthread_mutex_unlock(&delete_mutex);
 					pthread_mutex_lock(&list_mutex);
 					Delete(random_value, &head);
