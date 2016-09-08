@@ -157,18 +157,21 @@ void* Thread_Operation() {
 			if (finished_member == 0) {
 				if (memberCount < m_member) {
 					memberCount++;
+					pthread_mutex_unlock(&member_mutex);
 					pthread_mutex_lock(&total_mutex);
 					totalCount++;
 					pthread_mutex_unlock(&total_mutex);
-					pthread_mutex_unlock(&member_mutex);
 					pthread_rwlock_rdlock(&rwlock);
 					Member(random_value, head);
 					pthread_rwlock_unlock(&rwlock);
 				} else {
 					finished_member = 1;
+					pthread_mutex_unlock(&member_mutex);
 				}
+			} else {
+				pthread_mutex_unlock(&member_mutex);
 			}
-			pthread_mutex_unlock(&member_mutex);
+
 		}
 
 		else if (random_select == 1) {
@@ -176,18 +179,21 @@ void* Thread_Operation() {
 			if (finished_insert == 0) {
 				if (insertCount < m_insert) {
 					insertCount++;
+					pthread_mutex_unlock(&insert_mutex);
 					pthread_mutex_lock(&total_mutex);
 					totalCount++;
 					pthread_mutex_unlock(&total_mutex);
-					pthread_mutex_unlock(&insert_mutex);
 					pthread_rwlock_wrlock(&rwlock);
 					Insert(random_value, &head);
 					pthread_rwlock_unlock(&rwlock);
 				} else {
 					finished_insert = 1;
+					pthread_mutex_unlock(&insert_mutex);
 				}
+			} else {
+				pthread_mutex_unlock(&insert_mutex);
 			}
-			pthread_mutex_unlock(&insert_mutex);
+
 		}
 
 		else if (random_select == 2) {
@@ -195,18 +201,20 @@ void* Thread_Operation() {
 			if (finished_delete == 0) {
 				if (deleteCount < m_delete) {
 					deleteCount++;
+					pthread_mutex_unlock(&delete_mutex);
 					pthread_mutex_lock(&total_mutex);
 					totalCount++;
 					pthread_mutex_unlock(&total_mutex);
-					pthread_mutex_unlock(&delete_mutex);
 					pthread_rwlock_wrlock(&rwlock);
 					Delete(random_value, &head);
 					pthread_rwlock_unlock(&rwlock);
 				} else {
 					finished_delete = 1;
+					pthread_mutex_unlock(&delete_mutex);
 				}
+			} else {
+				pthread_mutex_unlock(&delete_mutex);
 			}
-			pthread_mutex_unlock(&delete_mutex);
 		}
 	}
 	return NULL;
