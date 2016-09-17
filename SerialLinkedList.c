@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <time.h>
 
+//Linked list node definition
 struct list_node_s {
     int data;
     struct list_node_s *next;
@@ -16,7 +17,13 @@ int Delete(int value, struct list_node_s **head_pp);
 
 void getInputs(int argc, char *argv[]);
 
+//n : initial number of elements in the linked list
+//m :total number of operations on the list
 int n, m;
+
+//m_insert_fraction: fraction of total operations(m) which should be insertions
+//m_delete_fraction: fraction of total operations(m) which should be deletions
+//m_member_fraction: fraction of total operations(m) which should be member calls
 float m_insert_fraction, m_delete_fraction, m_member_fraction;
 
 int main(int argc, char *argv[]) {
@@ -28,12 +35,14 @@ int main(int argc, char *argv[]) {
 
     getInputs(argc, argv);
 
+    
     srand(time(NULL));
+    //Initialization of the linked list
     for (int i = 0; i < n;) {
         int r = rand() % 65535;
         i += Insert(r, &head);
     }
-
+    //calculations for the number of insertions, deletions, and member calls
     float m_insert = m_insert_fraction * m;
     float m_delete = m_delete_fraction * m;
     float m_member = m_member_fraction * m;
@@ -156,7 +165,7 @@ void getInputs(int argc, char *argv[]) {
 
     //Validating the arguments
     if (n <= 0 || m <= 0 || m_member_fraction + m_insert_fraction + m_delete_fraction != 1.0) {
-        printf("Please give the command with the arguements: ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>\n");
+        printf("Please give the command with the arguments: ./serial_linked_list <n> <m> <mMember> <mInsert> <mDelete>\n");
 
         if (n <= 0)
             printf("Please provide a valid number of nodes for the linked list (value of n)\n");

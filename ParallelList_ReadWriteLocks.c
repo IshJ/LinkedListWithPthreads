@@ -9,30 +9,33 @@ struct list_node_s {
 	struct list_node_s *next;
 };
 
-int Member(int value, struct list_node_s *head_p);
-int Insert(int value, struct list_node_s **head_pp);
-int Delete(int value, struct list_node_s **head_pp);
-void *Thread_Operation();
-void getInputs(int argc, char *argv[]);
-
 const int MAX_THREADS = 1024;
 long thread_count;
+
 pthread_rwlock_t rwlock;
 pthread_mutex_t member_mutex;
 pthread_mutex_t insert_mutex;
 pthread_mutex_t delete_mutex;
-
 pthread_mutex_t total_mutex;
 
 struct list_node_s* head = NULL;
 
 int n, m;
 float m_insert_fraction, m_delete_fraction, m_member_fraction;
-float m_member = 0.0;
+float m_insert = 0.0, m_delete = 0.0, m_member = 0.0;
 int memberCount = 0, insertCount = 0, deleteCount = 0;
 
-int main(int argc, char *argv[]) {
+int Member(int value, struct list_node_s *head_p);
 
+int Insert(int value, struct list_node_s **head_pp);
+
+int Delete(int value, struct list_node_s **head_pp);
+
+void *Thread_Operation();
+
+void getInputs(int argc, char* argv[]);
+
+int main(int argc, char* argv[]) {
 	long thread;
 	pthread_t* thread_handles;
 	struct timeval startTime, endTime;
@@ -46,9 +49,13 @@ int main(int argc, char *argv[]) {
 		i += Insert(r, &head);
 	}
 
-	FILE *fp;
-	fp = fopen("readwrite.txt", "a");
+	m_insert = m_insert_fraction * m;
+	m_delete = m_delete_fraction * m;
+	m_member = m_member_fraction * m;
+
 	thread_handles = (pthread_t*) malloc(thread_count * sizeof(pthread_t));
+	FILE *fp;
+	fp = fopen("ReadWriteLockResults.txt", "a");
 
 	gettimeofday(&startTime, NULL);
 	pthread_rwlock_init(&rwlock, NULL);
@@ -58,14 +65,16 @@ int main(int argc, char *argv[]) {
 	pthread_mutex_init(&total_mutex, NULL);
 
 	for (thread = 0; thread < thread_count; thread++) {
-		pthread_create(&thread_handles[thread], NULL, Thread_Operation,
-				(void*) thread);
+		pthread_create(&thread_handles[thread], NULL, Thread_Operation, NULL);
 	}
 
 	for (thread = 0; thread < thread_count; thread++) {
 		pthread_join(thread_handles[thread], NULL);
 	}
+
 	gettimeofday(&endTime, NULL);
+
+	// Destroying the mutex
 	pthread_rwlock_destroy(&rwlock);
 	pthread_mutex_destroy(&member_mutex);
 	pthread_mutex_destroy(&insert_mutex);
@@ -142,7 +151,14 @@ int Delete(int value, struct list_node_s **head_pp) {
 	}
 }
 
-void* Thread_Operation() {
+int totalCount = 0;
+
+int finished_member = 0;
+int finished_insert = 0;
+int finished_delete = 0;
+
+void *Thread_Operation() {
+
 	while (totalCount < m) {
 
 		// Variable to randomly generate values for operations
@@ -223,7 +239,7 @@ void* Thread_Operation() {
 void getInputs(int argc, char *argv[]) {
 	if (argc != 7) {
 		printf(
-				"Please give the command in this format : ./readwriteLinkedList <n> <m> <thread_count> <mMember> <mInsert> <mDelete>\n");
+				"Please give the command in this format : ./mutexLinkedList <n> <m> <thread_count> <mMember> <mInsert> <mDelete>\n");
 		exit(0);
 	}
 
@@ -246,7 +262,7 @@ void getInputs(int argc, char *argv[]) {
 			|| m_member_fraction + m_insert_fraction + m_delete_fraction
 					!= 1.0) {
 		printf(
-				"Please give the command with the arguements: ./readwriteLinkedList <n> <m> <thread_count> <mMember> <mInsert> <mDelete>\n");
+				"Please give the command with the arguments: ./mutexLinkedList <n> <m> <thread_count> <mMember> <mInsert> <mDelete>\n");
 
 		if (n <= 0)
 			printf(

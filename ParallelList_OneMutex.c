@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 	elapsedTime = (double) (endTime.tv_usec - startTime.tv_usec) / 1000000
 			+ (double) (endTime.tv_sec - startTime.tv_sec);
 
-	fprintf(fp, "%.6f\n", elapsedTime);
+fprintf(fp, "%.6f\n", elapsedTime);
 
 	fclose(fp);
 
@@ -123,7 +123,6 @@ int Insert(int value, struct list_node_s **head_pp) {
 		else
 			pred_p->next = temp_p;
 		return 1;
-		totalCount++;
 	} else {
 		return 0;
 	}
